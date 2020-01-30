@@ -1,19 +1,29 @@
 package com.example.fuckvivo;
 
 import android.accessibilityservice.AccessibilityService;
-import android.annotation.TargetApi;
+import android.accessibilityservice.GestureDescription;
+import android.annotation.SuppressLint;
+import android.graphics.Path;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.widget.Toast;
+
 import androidx.annotation.RequiresApi;
 
 import java.util.List;
 
+/**
+ * https://blog.csdn.net/sw69366/article/details/99691377
+ * https://blog.csdn.net/ybf326/article/details/83928353
+ *
+ */
 public class FuckVivoService extends AccessibilityService {
 
+    private static final String TAG = "FuckVivoService";
+
+    @SuppressLint("NewApi")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
@@ -21,7 +31,7 @@ public class FuckVivoService extends AccessibilityService {
 
         CharSequence packageName = accessibilityEvent.getPackageName();
 
-        Log.d("xxx", packageName.toString());
+        LogUtils.e(TAG, packageName.toString());
 
 
         AccessibilityNodeInfo rootInActiveWindow = getRootInActiveWindow();
@@ -33,7 +43,7 @@ public class FuckVivoService extends AccessibilityService {
                 if (installBtns != null && installBtns.size() > 0) {
                     if (installBtns.get(0).getText().toString().equalsIgnoreCase("继续安装")) {
                         installBtns.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        Toast.makeText(this, "干死傻逼VIVO", Toast.LENGTH_SHORT).show();
+                        LogUtils.e(TAG, "点击“继续安装”");
                     }
                 }
             }
@@ -43,9 +53,24 @@ public class FuckVivoService extends AccessibilityService {
             if (rootInActiveWindow != null) {
                 List<AccessibilityNodeInfo> installBtns = rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.android.packageinstaller:id/ok_button");
                 if (installBtns != null && installBtns.size() > 0) {
-                    if (installBtns.get(0).getText().toString().equalsIgnoreCase("安装")) {
-                        installBtns.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        Toast.makeText(this, "干死傻逼VIVO", Toast.LENGTH_SHORT).show();
+
+                    AccessibilityNodeInfo installNode = installBtns.get(0);
+                    if (installNode != null) {
+                        // installNode无法调用performAction直接点击，需要根据坐标点击
+                        clickOnScreen(100, 1950, new GestureResultCallback() {
+                            @Override
+                            public void onCompleted(GestureDescription gestureDescription) {
+                                super.onCompleted(gestureDescription);
+                                LogUtils.e(TAG, "点击“安装” 成功");
+                            }
+
+                            @Override
+                            public void onCancelled(GestureDescription gestureDescription) {
+                                super.onCancelled(gestureDescription);
+                                LogUtils.e(TAG, "installNode Gesture onCancelled() called");
+
+                            }
+                        }, null);
                     }
                 }
             }
@@ -53,14 +78,13 @@ public class FuckVivoService extends AccessibilityService {
 
         {
             if (rootInActiveWindow != null) {
-                List<AccessibilityNodeInfo> dialog_pwd = rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.bbk.account:id/dialog_pwd");
+                List<AccessibilityNodeInfo> dialog_pwd = rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.coloros.safecenter:id/et_login_passwd_edit");
                 if (dialog_pwd != null && dialog_pwd.size() > 0) {
-                    Log.d("xxx", "找到输入框 - 自动填入密码");
+                    LogUtils.e(TAG, "找到输入框 - 自动填入密码");
                     Bundle arguments = new Bundle();
                     arguments.putCharSequence(
-                            AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "你的VIVO密码");
+                            AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "c12345678");
                     dialog_pwd.get(0).performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
-                    Toast.makeText(this, "干死傻逼VIVO-自动输入密码", Toast.LENGTH_SHORT).show();
 
                     List<AccessibilityNodeInfo> button1 = rootInActiveWindow.findAccessibilityNodeInfosByViewId("android:id/button1");
 
@@ -70,22 +94,55 @@ public class FuckVivoService extends AccessibilityService {
 
 
                 } else {
-                    Log.d("xxx", "没找到输入框");
+                    LogUtils.e(TAG, "没找到输入框");
                 }
             }
         }
 
 
-        {
-            if (rootInActiveWindow != null) {
-                List<AccessibilityNodeInfo> button2 = rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.android.packageinstaller:id/launch_button");
-                if (button2 != null && button2.size() > 0) {
-                    button2.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                }
-            }
-        }
+//        {
+//            if (rootInActiveWindow != null) {
+//                List<AccessibilityNodeInfo> button2 = rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.android.packageinstaller:id/launch_button");
+//                if (button2 != null && button2.size() > 0) {
+//                    button2.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
+//                }
+//            }
+//        }
 
 
+    }
+
+    /**
+     * 通过AccessibilityService在屏幕上某个位置单击
+     */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void clickOnScreen(float x,
+                              float y,
+                              AccessibilityService.GestureResultCallback callback,
+                              Handler handler) {
+
+        Path path = new Path();
+        path.moveTo(x, y);
+        gestureOnScreen(path, 0, 100, callback, handler);
+
+    }
+
+    /**
+     * 通过AccessibilityService在屏幕上模拟手势
+     *
+     * @param path 手势路径
+     */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void gestureOnScreen(Path path,
+                                long startTime,
+                                long duration,
+                                AccessibilityService.GestureResultCallback callback,
+                                Handler handler) {
+
+        GestureDescription description = new GestureDescription.Builder()
+                .addStroke(new GestureDescription.StrokeDescription(path, startTime, duration))
+                .build();
+        dispatchGesture(description, callback, handler);
     }
 
     @Override
