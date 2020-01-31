@@ -6,4 +6,5 @@
     android:canPerformGestures="true"
     android:canRetrieveWindowContent="true"
     android:description="@string/app_name"
-    android:notificationTimeout="100" />
+    android:notificationTimeout="100"
+    android:packageNames="com.android.packageinstaller,com.coloros.safecenter" />

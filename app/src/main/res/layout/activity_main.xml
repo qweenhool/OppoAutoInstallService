@@ -7,6 +7,14 @@
         android:layout_height="match_parent"
         tools:context=".MainActivity">
 
+    <Button
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="开启悬浮窗"
+        android:onClick="checkOverlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

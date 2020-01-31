@@ -3,10 +3,13 @@ package com.example.fuckvivo;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Path;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -17,11 +20,13 @@ import java.util.List;
 /**
  * https://blog.csdn.net/sw69366/article/details/99691377
  * https://blog.csdn.net/ybf326/article/details/83928353
- *
+ * https://www.jb51.net/article/172238.htm
  */
-public class FuckVivoService extends AccessibilityService {
+public class FuckVivoService extends BaseAccessibilityService {
 
     private static final String TAG = "FuckVivoService";
+
+    private Handler handler = new Handler();
 
     @SuppressLint("NewApi")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -71,6 +76,7 @@ public class FuckVivoService extends AccessibilityService {
 
                             }
                         }, null);
+
                     }
                 }
             }
@@ -91,6 +97,41 @@ public class FuckVivoService extends AccessibilityService {
                     if (button1 != null && button1.size() > 0) {
                         button1.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
+
+                    // fix: 2020/1/31 密码框消失后不会自动点击“安装”按钮
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtils.e(TAG, "1:show");
+                            AlertDialog.Builder builder = new AlertDialog.Builder(FuckVivoService.this);
+                            builder.setTitle("提示");
+                            builder.setMessage("该下车了");
+                            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            });
+                            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            });
+                            final AlertDialog dialog = builder.create();
+                            //在dialog  show方法之前添加如下代码，表示该dialog是一个系统的dialog**
+                            dialog.getWindow().setType((WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY));
+                            dialog.show();
+
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    LogUtils.e(TAG, "2:dismiss");
+                                    dialog.dismiss();
+                                }
+                            }, 1000);
+                        }
+                    }, 2000);
 
 
                 } else {
