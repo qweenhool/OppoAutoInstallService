@@ -46,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    public void goToAccessibilitySettings(View view) {
+        AccessibilityUtils.goToAccessibilitySettings(this);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
@@ -59,4 +64,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 }
