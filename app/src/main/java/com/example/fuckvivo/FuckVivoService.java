@@ -57,6 +57,18 @@ public class FuckVivoService extends BaseAccessibilityService {
 
         {
             if (rootInActiveWindow != null) {
+                AccessibilityNodeInfo reinstallNode = findViewByID("android:id/button1");
+                if (reinstallNode != null) {
+                    if (reinstallNode.getText().toString().equals("重新安装")) {
+                        LogUtils.e(TAG, "点击“重新安装”");
+                        performViewClick(reinstallNode);
+                    }
+                }
+            }
+        }
+
+        {
+            if (rootInActiveWindow != null) {
                 List<AccessibilityNodeInfo> installBtns = rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.android.packageinstaller:id/ok_button");
                 if (installBtns != null && installBtns.size() > 0) {
 
