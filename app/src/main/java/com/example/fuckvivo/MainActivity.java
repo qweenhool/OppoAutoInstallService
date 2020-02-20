@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,7 +24,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initView();
+
         checkAccessibility(null);
+    }
+
+    private void initView() {
+
     }
 
     public void checkAccessibility(View view) {
@@ -41,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, 1);
-        }else {
+        } else {
             Toast.makeText(this, "悬浮窗已开启", Toast.LENGTH_SHORT).show();
         }
     }
@@ -57,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (Settings.canDrawOverlays(this)) {
                     Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show();
-                }else {
+                } else {
                     // SYSTEM_ALERT_WINDOW permission not granted...
                     Toast.makeText(this, "未被授予权限，相关功能不可用", Toast.LENGTH_SHORT).show();
                 }
@@ -65,4 +72,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void reInstallSwitch(View view) {
+        Constants.isReInstallOpen = !Constants.isReInstallOpen;
+        Toast.makeText(this, "自动点击“重新安装”：" + Constants.isReInstallOpen, Toast.LENGTH_SHORT).show();
+    }
 }
