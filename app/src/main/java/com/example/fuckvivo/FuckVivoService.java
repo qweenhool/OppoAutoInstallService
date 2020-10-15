@@ -75,7 +75,7 @@ public class FuckVivoService extends BaseAccessibilityService {
                     AccessibilityNodeInfo installNode = installBtns.get(0);
                     if (installNode != null) {
                         // installNode无法调用performAction直接点击，需要根据坐标点击
-                        clickOnScreen(100, 1950, new GestureResultCallback() {
+                        clickOnScreen(526, 2203, new GestureResultCallback() {
                             @Override
                             public void onCompleted(GestureDescription gestureDescription) {
                                 super.onCompleted(gestureDescription);
